@@ -1,0 +1,31 @@
+
+# --- Базовые научные библиотеки ---
+numpy==1.26.4
+pandas==2.2.2
+tqdm==4.66.4
+
+# --- NLP / Embeddings ---
+sentence-transformers==3.0.1
+keybert==0.8.4
+nltk==3.9.1
+scikit-learn==1.5.2
+
+# --- Векторный поиск ---
+faiss-cpu==1.7.4
+
+# --- Работа с документами ---
+python-docx
+PyPDF2==3.0.1
+
+# --- API / UI (опционально, если планируешь интерфейс) ---
+fastapi==0.115.2
+uvicorn==0.30.6
+streamlit==1.39.0
+
+# --- Вспомогательные утилиты ---
+loguru==0.7.2
+python-dotenv==1.0.1
+
+# --- RAG / LLM интеграция (на будущее) ---
+transformers==4.45.2
+torch==2.4.1
