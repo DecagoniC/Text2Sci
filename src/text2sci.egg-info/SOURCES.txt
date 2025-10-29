@@ -1,0 +1,17 @@
+README.md
+pyproject.toml
+src/embedding/__init__.py
+src/embedding/embedder.py
+src/extract/__init__.py
+src/extract/text_extractor.py
+src/preprocess/__init__.py
+src/preprocess/chunker.py
+src/retrieval/__init__.py
+src/retrieval/retriever.py
+src/text2sci.egg-info/PKG-INFO
+src/text2sci.egg-info/SOURCES.txt
+src/text2sci.egg-info/dependency_links.txt
+src/text2sci.egg-info/requires.txt
+src/text2sci.egg-info/top_level.txt
+src/unit_tests/test_embedder.py
+src/unit_tests/test_text_extractor.py

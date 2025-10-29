@@ -1,0 +1,33 @@
+# Наука и обработка данных
+numpy
+pandas
+tqdm
+
+# Обработка текста и NLP
+sentence-transformers
+keybert
+nltk
+scikit-learn
+faiss-cpu
+
+# Работа с документами
+python-docx
+pypdf
+reportlab
+PyMuPDF
+
+# Веб и приложения
+fastapi
+uvicorn
+streamlit
+
+# Логирование и окружение
+loguru
+python-dotenv
+
+# Тестирование
+pytest
+
+# Компьютерное зрение и OCR
+opencv-python
+easyocr

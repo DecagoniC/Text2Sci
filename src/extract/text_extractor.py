@@ -1,7 +1,5 @@
 import os
-import re
 from typing import Optional
-import pypdf
 import fitz  # PyMuPDF
 from docx import Document
 from PIL import Image
@@ -12,7 +10,7 @@ import io
 
 class DocumentExtractor:
     """
-    Извлекает текст из PDF, TXT и DOCX.  
+    Извлекает текст из PDF, TXT и DOCX.
     PDF и DOCX с картинками обрабатываются через OCR (EasyOCR + PyMuPDF/PIL).
     """
 
@@ -43,13 +41,15 @@ class DocumentExtractor:
             else:
                 # OCR для страницы с картинкой
                 pix = page.get_pixmap()
-                img = np.array(Image.frombytes("RGB", [pix.width, pix.height], pix.samples))
+                img = np.array(
+                    Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                )
                 try:
                     ocr_result = self.ocr_reader.readtext(img, detail=0)
                     if ocr_result:
                         text.append(" ".join(ocr_result))
                 except Exception as e:
-                    print(f"[!] OCR ошибка на странице {i+1}: {e}")
+                    print(f"[!] OCR ошибка на странице {i + 1}: {e}")
         return "\n".join(text)
 
     def _extract_from_txt(self, filepath: str) -> str:

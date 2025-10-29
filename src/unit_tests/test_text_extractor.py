@@ -2,6 +2,7 @@ import sys
 import os
 import re
 import difflib
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import pytest
 from extract.text_extractor import DocumentExtractor
@@ -27,19 +28,21 @@ def similarity(a: str, b: str) -> float:
 @pytest.mark.parametrize("ext", [".txt", ".docx", ".pdf"])
 def test_empty_file(ext):
     path = os.path.join(FILES_DIR, f"empty{ext}")
-    
+
     if ext == ".txt":
         with open(path, "w", encoding="utf-8") as f:
             f.write("")
     elif ext == ".docx":
         from docx import Document
+
         doc = Document()
         doc.save(path)
     elif ext == ".pdf":
         from reportlab.pdfgen import canvas
+
         c = canvas.Canvas(path)
         c.save()
-    
+
     text = extractor.extract(path)
     assert text == "", f"Файл {ext} должен вернуть пустую строку"
 
@@ -127,13 +130,20 @@ def test_text_difference_between_books():
         for t2 in all_aclock:
             assert t1 != t2, "Тексты разных произведений совпадают!"
 
+
 # ------------------------
 # 7. Текст с картинкой (игнорируем картинку)
 # ------------------------
 def test_text_with_picture_ignored():
-    pdf_text = normalize(extractor.extract(os.path.join(FILES_DIR, "textwithpicture.pdf")))
-    docx_text = normalize(extractor.extract(os.path.join(FILES_DIR, "textwithpicture.docx")))
-    txt_text = normalize(extractor.extract(os.path.join(FILES_DIR, "textwithpicturetest.txt")))
+    pdf_text = normalize(
+        extractor.extract(os.path.join(FILES_DIR, "textwithpicture.pdf"))
+    )
+    docx_text = normalize(
+        extractor.extract(os.path.join(FILES_DIR, "textwithpicture.docx"))
+    )
+    txt_text = normalize(
+        extractor.extract(os.path.join(FILES_DIR, "textwithpicturetest.txt"))
+    )
 
     pdf_sim = similarity(pdf_text, txt_text)
     docx_sim = similarity(docx_text, txt_text)
