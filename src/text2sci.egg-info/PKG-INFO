@@ -1,0 +1,12 @@
+Metadata-Version: 2.4
+Name: text2sci
+Version: 0.1.0
+Summary: Text to Science: extraction + embeddings + retrieval
+Requires-Dist: sentence-transformers
+Requires-Dist: numpy
+Requires-Dist: python-docx
+Requires-Dist: PyPDF2
+Requires-Dist: reportlab
+Requires-Dist: pymorphy2
+Requires-Dist: faiss-cpu
+Requires-Dist: easyocr
