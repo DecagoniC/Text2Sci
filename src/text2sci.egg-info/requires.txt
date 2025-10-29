@@ -1,0 +1,8 @@
+sentence-transformers
+numpy
+python-docx
+PyPDF2
+reportlab
+pymorphy2
+faiss-cpu
+easyocr
