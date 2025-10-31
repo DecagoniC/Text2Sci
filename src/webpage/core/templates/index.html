@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Demo</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: #fff;
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            resize: vertical;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        input[type="file"] {
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+            width: 48%;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .result {
+            margin-top: 25px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            min-height: 50px;
+            white-space: pre-wrap;
+        }
+
+        .file-link {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .file-link a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        .file-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI & Файлы</h1>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <textarea name="txt" placeholder="Введите текст..."></textarea>
+            
+            <div class="button-group">
+                <button type="submit" name="action" value="send_text">Отправить сообщение</button>
+                <button type="submit" name="action" value="upload_file">Загрузить файл</button>
+            </div>
+
+            <input type="file" name="file">
+        </form>
+
+        <div class="result">
+            {{ res }}
+        </div>
+
+        {% if file_url %}
+        <div class="file-link">
+            Файл сохранён: <a href="{{ file_url }}" target="_blank">{{ file_url }}</a>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
