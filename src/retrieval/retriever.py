@@ -1,5 +1,6 @@
 import faiss
 import numpy as np
+import pickle
 from typing import List, Tuple
 
 
@@ -9,16 +10,17 @@ class VectorRetriever:
     Использует FAISS с индексом HNSW.
     """
 
-    def __init__(self, dim: int, m: int = 32) -> None:
+    def __init__(self, dim: int, m: int = 32):
         """
         dim — размерность эмбеддингов (например, 768)
         m — параметр графа (число связей между вершинами, влияет на скорость/точность)
         """
-        self.index: faiss.IndexHNSWFlat = faiss.IndexHNSWFlat(dim, m)
-        self.texts: List[str] = []  # сопоставляем каждому вектору исходный текст
-        self.dim: int = dim
+        self.index = faiss.IndexHNSWFlat(dim, m)
+        self.texts = []  # Сопоставляем каждому вектору исходный текст
+        self.dim = dim
+        self.m = m
 
-    def add_embeddings(self, embeddings: np.ndarray, texts: List[str]) -> None:
+    def add_embeddings(self, embeddings: np.ndarray, texts: List[str]):
         """
         Добавляет новые эмбеддинги и тексты в индекс.
         """
@@ -26,16 +28,43 @@ class VectorRetriever:
         self.index.add(embeddings.astype("float32"))
         self.texts.extend(texts)
 
-    def search(
-        self, query_vector: np.ndarray, top_k: int = 5
-    ) -> List[Tuple[str, float]]:
+    def search(self, query_vector: np.ndarray, top_k: int = 5) -> List[Tuple[str, float]]:
         """
         Ищет top_k наиболее близких фрагментов по эмбеддингу запроса.
         Возвращает список (текст, расстояние).
         """
         distances, indices = self.index.search(query_vector.astype("float32"), top_k)
-        results: List[Tuple[str, float]] = []
+        results = []
         for idx, dist in zip(indices[0], distances[0]):
             if idx < len(self.texts):
-                results.append((self.texts[idx], float(dist)))
+                results.append((self.texts[idx], dist))
         return results
+
+    # --- Новое: сохранение и загрузка индекса и текстов ---
+    def save(self, index_path: str, texts_path: str):
+        """
+        Сохраняет FAISS-индекс и список текстов.
+        """
+        faiss.write_index(self.index, index_path)
+        with open(texts_path, "wb") as f:
+            pickle.dump(self.texts, f)
+        print(f"[+] Индекс сохранён в {index_path}")
+        print(f"[+] Тексты сохранены в {texts_path}")
+
+    @classmethod
+    def load(cls, index_path: str, texts_path: str):
+        """
+        Загружает FAISS-индекс и список текстов.
+        """
+        index = faiss.read_index(index_path)
+        with open(texts_path, "rb") as f:
+            texts = pickle.load(f)
+
+        dim = index.d  # получаем размерность из индекса
+        retriever = cls(dim=dim)
+        retriever.index = index
+        retriever.texts = texts
+
+        print(f"[+] Индекс загружен из {index_path}")
+        print(f"[+] Загружено {len(texts)} текстов")
+        return retriever
