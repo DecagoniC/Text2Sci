@@ -4,4 +4,5 @@ __pycache__/
 src/unit_tests/files_for_testing/
 .mypy_cache
 .pytest_cache
-.ruff_cache
+.ruff_cachemodels/
+models/
