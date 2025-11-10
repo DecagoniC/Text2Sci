@@ -6,3 +6,4 @@ src/unit_tests/files_for_testing/
 .pytest_cache
 .ruff_cachemodels/
 models/
+data/

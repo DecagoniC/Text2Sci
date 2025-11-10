@@ -1,23 +1,37 @@
 import faiss
 import numpy as np
 import pickle
-import os
 from typing import List, Tuple
 
-
 class VectorRetriever:
+    """
+    Хранение эмбеддингов и быстрый поиск с помощью FAISS (HNSW).
+    Оригинальные тексты не меняются и хранятся отдельно.
+    """
+
     def __init__(self, dim: int, m: int = 32):
-        self.index = faiss.IndexHNSWFlat(dim, m)
-        self.texts = []  # Сопоставляем каждому вектору исходный текст
         self.dim = dim
         self.m = m
+        self.index = faiss.IndexHNSWFlat(dim, m)
+        self.texts: List[str] = []  # Оригинальные тексты, соответствующие эмбеддингам
 
     def add_embeddings(self, embeddings: np.ndarray, texts: List[str]):
+        """
+        embeddings: np.ndarray, форма (N, dim)
+        texts: список оригинальных текстовых фрагментов, длина N
+        """
         assert embeddings.shape[1] == self.dim, "Неверная размерность эмбеддингов!"
         self.index.add(embeddings.astype("float32"))
         self.texts.extend(texts)
 
     def search(self, query_vector: np.ndarray, top_k: int = 5) -> List[Tuple[str, float]]:
+        """
+        Поиск ближайших векторов.
+        Возвращает список: [(оригинальный текст, расстояние), ...]
+        """
+        if query_vector.ndim == 1:
+            query_vector = query_vector.reshape(1, -1)
+
         distances, indices = self.index.search(query_vector.astype("float32"), top_k)
         results = []
         for idx, dist in zip(indices[0], distances[0]):
@@ -25,26 +39,21 @@ class VectorRetriever:
                 results.append((self.texts[idx], dist))
         return results
 
-    def save(self, base_name: str):
-        """Сохраняет индекс и тексты в папку data/, используя базовое имя."""
-        os.makedirs("data", exist_ok=True)
-
-        index_path = os.path.join("data", f"{base_name}.index")
-        texts_path = os.path.join("data", f"{base_name}_texts.pkl")
-
+    def save(self, index_path: str, texts_path: str):
+        """
+        Сохраняет FAISS индекс и оригинальные тексты на диск.
+        """
         faiss.write_index(self.index, index_path)
         with open(texts_path, "wb") as f:
             pickle.dump(self.texts, f)
-
         print(f"[+] Индекс сохранён: {index_path}")
         print(f"[+] Тексты сохранены: {texts_path}")
 
     @classmethod
-    def load(cls, base_name: str):
-        """Загружает индекс и тексты из папки data/ по базовому имени."""
-        index_path = os.path.join("data", f"{base_name}.index")
-        texts_path = os.path.join("data", f"{base_name}_texts.pkl")
-
+    def load(cls, index_path: str, texts_path: str):
+        """
+        Загружает индекс и оригинальные тексты с диска.
+        """
         index = faiss.read_index(index_path)
         with open(texts_path, "rb") as f:
             texts = pickle.load(f)
@@ -54,5 +63,6 @@ class VectorRetriever:
         retriever.index = index
         retriever.texts = texts
 
-        print(f"[+] Загружен индекс '{base_name}' ({len(texts)} текстов)")
+        print(f"[+] Индекс загружен: {index_path}")
+        print(f"[+] Загружено {len(texts)} текстов")
         return retriever
