@@ -9,11 +9,6 @@ import io
 
 
 class DocumentExtractor:
-    """
-    Извлекает текст из PDF, TXT и DOCX.
-    PDF и DOCX с картинками обрабатываются через OCR (EasyOCR + PyMuPDF/PIL).
-    """
-
     def __init__(self, ocr_languages=("en", "ru")):
         self.ocr_reader = easyocr.Reader(list(ocr_languages), gpu=False)
 
