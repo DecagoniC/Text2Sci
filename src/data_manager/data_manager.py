@@ -4,8 +4,10 @@ import pickle
 from typing import List, Dict, Tuple
 import numpy as np
 
-from embedding import TextEmbedder
-from retrieval import VectorRetriever
+from embedding.embedder import TextEmbedder
+from retrieval.retriever import VectorRetriever, Chunk
+from extract.text_extractor import DocumentExtractor
+from preprocess.chunker import TextPreprocessor
 
 class DatabaseManager:
     """
@@ -25,8 +27,7 @@ class DatabaseManager:
 
         self.embedder = TextEmbedder()
         self.retriever = None
-        self.texts: List[str] = []
-        self.metadata: List[Dict] = []
+        self.texts: List[Chunk] = []
 
         # загружаем индекс и тексты, если они есть
         if os.path.exists(self.index_path) and os.path.exists(self.texts_path):
@@ -42,76 +43,45 @@ class DatabaseManager:
 
     # ----------------- Работа с исходными файлами -----------------
     def save_file(self, filepath: str) -> str:
-        """
-        Копирует файл в articles_raw и возвращает путь к нему.
-        """
         fname = os.path.basename(filepath)
         dest_path = os.path.join(self.raw_path, fname)
         shutil.copy(filepath, dest_path)
         return dest_path
 
     # ----------------- Добавление новой статьи -----------------
-    def add_article(self, filepath: str, chunks: List[str], title: str = None, authors: List[str] = None):
-        """
-        Добавляет статью в базу:
-        - сохраняет файл
-        - добавляет тексты и эмбеддинги
-        - обновляет метаданные
-        """
-        # 1️⃣ Сохраняем исходный файл
+    def add_article(self, filepath: str):
         file_path = self.save_file(filepath)
 
-        # 2️⃣ Генерируем эмбеддинги для чанков
-        embeddings = self.embedder.encode(chunks)
+        doc_ext = DocumentExtractor()
+        raw_text = doc_ext.extract(file_path)
 
-        # 3️⃣ Добавляем в FAISS и локальные тексты
+        pre_raw = TextPreprocessor(use_lemmatization=False)
+        raw_chunks = pre_raw.process(raw_text)
+
+        pre_proc = TextPreprocessor(use_lemmatization=True)
+
+        processed_chunks = [pre_proc.clean_text(chunk) for chunk in raw_chunks]
+        processed_chunks = [pre_proc.lemmatize_text(chunk) for chunk in processed_chunks]
+
+        embeddings = self.embedder.encode(processed_chunks)
+
+        chunks = [Chunk(text=raw_chunk, file_path=file_path) for raw_chunk in raw_chunks]
+
         self.retriever.add_embeddings(embeddings, chunks)
-        self.texts.extend(chunks)
-
-        # 4️⃣ Обновляем метаданные
-        base_index = len(self.metadata)
-        for i, chunk in enumerate(chunks):
-            entry = {
-                "chunk_index": base_index + i,
-                "file_path": file_path,
-                "title": title,
-                "authors": authors or []
-            }
-            self.metadata.append(entry)
-
-        # 5️⃣ Сохраняем на диск
+        
         self.save_all()
 
     # ----------------- Сохранение на диск -----------------
     def save_all(self):
         """Сохраняет FAISS индекс, тексты и метаданные."""
         self.retriever.save(self.index_path, self.texts_path)
-        with open(self.metadata_path, "wb") as f:
-            pickle.dump(self.metadata, f)
-        print(f"[+] Метаданные сохранены в {self.metadata_path}")
 
     # ----------------- Поиск -----------------
     def query(self, query_text: str, top_k: int = 5) -> List[Dict]:
-        """
-        Поиск ближайших по смыслу фрагментов текста.
-        Возвращает список словарей с текстом, расстоянием и путем к файлу.
-        """
-        # 1️⃣ Векторизация запроса
+        preprocessor=TextPreprocessor()
+        query_text=preprocessor.process(query_text)
         query_vector = self.embedder.encode([query_text])
 
-        # 2️⃣ Поиск через FAISS
         results = self.retriever.search(query_vector, top_k=top_k)
 
-        # 3️⃣ Привязка к метаданным
-        output = []
-        for text, dist in results:
-            idx = self.texts.index(text)  # находим индекс в self.texts
-            meta = self.metadata[idx]     # соответствующие метаданные
-            output.append({
-                "text": text,
-                "distance": dist,
-                "file_path": meta.get("file_path"),
-                "title": meta.get("title"),
-                "authors": meta.get("authors")
-            })
-        return output
+        return results
