@@ -14,13 +14,16 @@ class TextPreprocessor:
         self.use_lemmatization = use_lemmatization
         self._lemma_cache: Dict[str, str] = {}
 
-    def clean_text(self, text: str) -> str:
+    def clean_text(self, text: str, lover: bool = True, links: bool = True, cut: bool=True) -> str:
         """Очистка текста: нижний регистр, удаление ссылок и спецсимволов."""
         text = text.replace("ё", "е").replace("Ё", "Е")
-        text = text.lower()
-        text = re.sub(r"http\S+|www\S+", "", text)
+        if lover:
+            text = text.lower()
+        if links:
+            text = re.sub(r"http\S+|www\S+", "", text)
         text = re.sub(r"\s+", " ", text)
-        text = re.sub(r"[^a-zа-я0-9.,!?;:\-()\s]", "", text)
+        if cut:
+            text = re.sub(r"[^a-zа-я0-9.,!?;:\-()\s]", "", text)
         return text.strip()
 
     def split_sentences(self, text: str) -> List[str]:
@@ -60,10 +63,16 @@ class TextPreprocessor:
         if current_chunk:
             chunks.append(" ".join(current_chunk))
         return chunks
-
-    def process(self, text: str) -> List[str]:
+    def process_querry(self, text: str, lover: bool = True, links: bool = True, cut: bool=True):
+        cleaned = self.clean_text(text, lover, links, cut)
+        sentences = self.split_sentences(cleaned)
+        if self.use_lemmatization:
+            sentences = [self.lemmatize_text(s) for s in sentences]
+        return sentences
+    
+    def process(self, text: str, lover: bool = True, links: bool = True, cut: bool=True) -> List[str]:
         """Полный пайплайн: очистка → (лемматизация) → разбиение на предложения → чанки."""
-        cleaned = self.clean_text(text)
+        cleaned = self.clean_text(text, lover, links, cut)
         sentences = self.split_sentences(cleaned)
         if self.use_lemmatization:
             sentences = [self.lemmatize_text(s) for s in sentences]

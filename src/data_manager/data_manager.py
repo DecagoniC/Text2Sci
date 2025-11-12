@@ -21,7 +21,6 @@ class DatabaseManager:
         self.raw_path = os.path.join(data_path, "articles_raw")
         self.texts_path = os.path.join(data_path, "articles_texts.pkl")
         self.index_path = os.path.join(data_path, "articles.index")
-        self.metadata_path = os.path.join(data_path, "articles_metadata.pkl")
 
         os.makedirs(self.raw_path, exist_ok=True)
 
@@ -29,17 +28,15 @@ class DatabaseManager:
         self.retriever = None
         self.texts: List[Chunk] = []
 
-        # загружаем индекс и тексты, если они есть
+        test_emb = self.embedder.encode(["тест"])
+        real_dim = test_emb.shape[1]
+
         if os.path.exists(self.index_path) and os.path.exists(self.texts_path):
             self.retriever = VectorRetriever.load(self.index_path, self.texts_path)
-            self.texts = self.retriever.texts
+            self.texts = self.retriever.collector
         else:
-            self.retriever = VectorRetriever(dim=dim)
+            self.retriever = VectorRetriever(dim=real_dim)
 
-        # загружаем метаданные
-        if os.path.exists(self.metadata_path):
-            with open(self.metadata_path, "rb") as f:
-                self.metadata = pickle.load(f)
 
     # ----------------- Работа с исходными файлами -----------------
     def save_file(self, filepath: str) -> str:
@@ -56,7 +53,7 @@ class DatabaseManager:
         raw_text = doc_ext.extract(file_path)
 
         pre_raw = TextPreprocessor(use_lemmatization=False)
-        raw_chunks = pre_raw.process(raw_text)
+        raw_chunks = pre_raw.process(raw_text, links=False, lover=False,cut=False)
 
         pre_proc = TextPreprocessor(use_lemmatization=True)
 
@@ -68,7 +65,7 @@ class DatabaseManager:
         chunks = [Chunk(text=raw_chunk, file_path=file_path) for raw_chunk in raw_chunks]
 
         self.retriever.add_embeddings(embeddings, chunks)
-        
+
         self.save_all()
 
     # ----------------- Сохранение на диск -----------------

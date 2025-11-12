@@ -1,11 +1,6 @@
+from seeker.seeker import Seeker
+from data_manager.data_manager import DatabaseManager
 import os
-import numpy as np
 
-from extract.text_extractor import DocumentExtractor
-from preprocess.chunker import TextPreprocessor
-from embedding.embedder import TextEmbedder
-
-
-text=str(input())
-preprocessor=TextPreprocessor(use_lemmatization=True)
-print(preprocessor.process(text))
+seeker=Seeker()
+print(seeker.get_raw_answer("Какая сцена показывает прощание с садом в рассказе Чехова Вишневый сад, и кто в ней участвует?",2))

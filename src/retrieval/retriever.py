@@ -33,6 +33,7 @@ class VectorRetriever:
         self.collector: List[Chunk] = []
 
     def add_embeddings(self, embeddings: np.ndarray, chunks: List[Chunk]):
+        print('\n\n', embeddings.shape[1], self.dim, '\n\n')
         assert embeddings.shape[1] == self.dim, "Неверная размерность эмбеддингов!"
         self.index.add(embeddings.astype("float32"))
         self.collector.extend(chunks)
