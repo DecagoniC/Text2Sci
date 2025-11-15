@@ -5,7 +5,6 @@ import os
 
 class TextEmbedder:
     def __init__(self, model_name: str = "sberbank-ai/sbert_large_nlu_ru", local_dir: str = "models/sbert_ru_large"):
-        # Проверяем, существует ли локальная копия
         if not os.path.exists(local_dir):
             print(f"[+] Модель не найдена в {local_dir}. Скачиваю {model_name} с HuggingFace...")
             model = SentenceTransformer(model_name)

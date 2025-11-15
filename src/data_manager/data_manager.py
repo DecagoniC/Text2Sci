@@ -10,13 +10,6 @@ from extract.text_extractor import DocumentExtractor
 from preprocess.chunker import TextPreprocessor
 
 class DatabaseManager:
-    """
-    Менеджер базы данных статей:
-    - хранение исходных файлов
-    - обработанные текстовые чанки
-    - FAISS индекс для поиска
-    - метаданные для связи чанков и файлов
-    """
     def __init__(self, data_path: str = "data", dim: int = 768):
         self.raw_path = os.path.join(data_path, "articles_raw")
         self.texts_path = os.path.join(data_path, "articles_texts.pkl")
@@ -38,14 +31,12 @@ class DatabaseManager:
             self.retriever = VectorRetriever(dim=real_dim)
 
 
-    # ----------------- Работа с исходными файлами -----------------
     def save_file(self, filepath: str) -> str:
         fname = os.path.basename(filepath)
         dest_path = os.path.join(self.raw_path, fname)
         shutil.copy(filepath, dest_path)
         return dest_path
 
-    # ----------------- Добавление новой статьи -----------------
     def add_article(self, filepath: str):
         file_path = self.save_file(filepath)
 
@@ -68,12 +59,10 @@ class DatabaseManager:
 
         self.save_all()
 
-    # ----------------- Сохранение на диск -----------------
     def save_all(self):
         """Сохраняет FAISS индекс, тексты и метаданные."""
         self.retriever.save(self.index_path, self.texts_path)
 
-    # ----------------- Поиск -----------------
     def query(self, query_text: str, top_k: int = 5) -> List[Dict]:
         preprocessor=TextPreprocessor()
         query_text=preprocessor.process(query_text)

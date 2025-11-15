@@ -41,11 +41,13 @@ class Seeker:
 
         combined_text = []
         file_paths_set = set()
+        distances = []
 
         for chunk in chunks:
             text = chunk["text"]
             file_path = chunk["file_path"]
+            distances.append(chunk["distance"])
             combined_text.append(f"[START CHUNK] {text} [END CHUNK]")
             file_paths_set.add(file_path)
 
-        return " ".join(combined_text), list(file_paths_set)
+        return " ".join(combined_text), list(file_paths_set), distances

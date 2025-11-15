@@ -5,10 +5,11 @@ import pickle
 
 # ------------------ Класс для хранения информации о фрагменте ------------------
 class Chunk:
-    def __init__(self, text: str, file_path: str, title: str = None, authors: List[str] = None):
+    def __init__(self, text: str, file_path: str, dist: np.float32 = None, title: str = None, authors: List[str] = None):
         self.text = text
         self.file_path = file_path
         self.title = title
+        self.distance = dist
         self.authors = authors or []
 
     def to_dict(self):
@@ -17,15 +18,12 @@ class Chunk:
             "text": self.text,
             "file_path": self.file_path,
             "title": self.title,
+            "distance": self.distance,
             "authors": self.authors
         }
 
 # ------------------ Ретривер ------------------
 class VectorRetriever:
-    """
-    Хранение эмбеддингов и быстрый поиск с помощью FAISS (HNSW).
-    Вместо словарей используется коллекция объектов Chunk.
-    """
     def __init__(self, dim: int, m: int = 32):
         self.dim = dim
         self.m = m
@@ -33,7 +31,6 @@ class VectorRetriever:
         self.collector: List[Chunk] = []
 
     def add_embeddings(self, embeddings: np.ndarray, chunks: List[Chunk]):
-        print('\n\n', embeddings.shape[1], self.dim, '\n\n')
         assert embeddings.shape[1] == self.dim, "Неверная размерность эмбеддингов!"
         self.index.add(embeddings.astype("float32"))
         self.collector.extend(chunks)

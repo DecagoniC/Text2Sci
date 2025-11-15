@@ -6,8 +6,6 @@ import pymorphy2
 
 
 class TextPreprocessor:
-    """Класс для очистки текста, лемматизации и разбиения на чанки."""
-
     def __init__(self, chunk_size: int = 300, use_lemmatization: bool = True):
         self.morph = pymorphy2.MorphAnalyzer()
         self.chunk_size = chunk_size
